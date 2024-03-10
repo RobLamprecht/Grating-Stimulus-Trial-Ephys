@@ -1,0 +1,284 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.7.1"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
+                 xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
+                 xmlns:eph="clr-namespace:Bonsai.Ephys;assembly=Bonsai.Ephys"
+                 xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
+                 xmlns:p1="clr-namespace:Bonsai.JonsUtils;assembly=Bonsai.JonsUtils"
+                 xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
+                 xmlns:scr="clr-namespace:Bonsai.Scripting.Expressions;assembly=Bonsai.Scripting.Expressions"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="gl:CreateWindow">
+          <gl:Width>1440</gl:Width>
+          <gl:Height>2560</gl:Height>
+          <gl:VSync>On</gl:VSync>
+          <gl:SwapSync>false</gl:SwapSync>
+          <gl:ClearColor>Black</gl:ClearColor>
+          <gl:ClearMask>DepthBufferBit ColorBufferBit</gl:ClearMask>
+          <gl:CursorVisible>true</gl:CursorVisible>
+          <gl:Location xsi:nil="true" />
+          <gl:WindowBorder>Hidden</gl:WindowBorder>
+          <gl:WindowState>Fullscreen</gl:WindowState>
+          <gl:DisplayDevice>Second</gl:DisplayDevice>
+          <gl:TargetRenderFrequency>60</gl:TargetRenderFrequency>
+          <gl:TargetUpdateFrequency xsi:nil="true" />
+          <gl:RenderState />
+          <gl:GraphicsMode>
+            <gl:ColorFormat>
+              <gl:Red>8</gl:Red>
+              <gl:Green>8</gl:Green>
+              <gl:Blue>8</gl:Blue>
+              <gl:Alpha>8</gl:Alpha>
+            </gl:ColorFormat>
+            <gl:Depth>16</gl:Depth>
+            <gl:Stencil>0</gl:Stencil>
+            <gl:Samples>0</gl:Samples>
+            <gl:AccumulatorFormat>
+              <gl:Red>0</gl:Red>
+              <gl:Green>0</gl:Green>
+              <gl:Blue>0</gl:Blue>
+              <gl:Alpha>0</gl:Alpha>
+            </gl:AccumulatorFormat>
+            <gl:Buffers>2</gl:Buffers>
+            <gl:Stereo>false</gl:Stereo>
+          </gl:GraphicsMode>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.BonVisionResources.bonsai" />
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="res:LoadResources" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="gl:RenderFrame" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="eph:Rhd2000EvalBoard">
+          <eph:BitFileName>C:\Users\bme-fong\Desktop\Bonsai.Examples.Ephys\rhd2000.bit</eph:BitFileName>
+          <eph:SampleRate>SampleRate30000Hz</eph:SampleRate>
+          <eph:ExternalFastSettleEnabled>false</eph:ExternalFastSettleEnabled>
+          <eph:LowerBandwidth>0.1</eph:LowerBandwidth>
+          <eph:UpperBandwidth>7500</eph:UpperBandwidth>
+          <eph:DspCutoffFrequency>1</eph:DspCutoffFrequency>
+          <eph:DspEnabled>true</eph:DspEnabled>
+          <eph:CableDelayA xsi:nil="true" />
+          <eph:CableDelayB xsi:nil="true" />
+          <eph:CableDelayC xsi:nil="true" />
+          <eph:CableDelayD xsi:nil="true" />
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>AmplifierData</Selector>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="dsp:SelectChannels">
+          <dsp:Channels>
+            <dsp:int>14</dsp:int>
+            <dsp:int>15</dsp:int>
+          </dsp:Channels>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="dsp:MatrixWriter">
+          <dsp:Path>Ephys.bin</dsp:Path>
+          <dsp:Suffix>Timestamp</dsp:Suffix>
+          <dsp:Overwrite>false</dsp:Overwrite>
+          <dsp:Layout>ColumnMajor</dsp:Layout>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="eph:AdcScale">
+          <eph:AdcType>Electrode</eph:AdcType>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="dsp:FrequencyFilter">
+          <dsp:SampleRate>30000</dsp:SampleRate>
+          <dsp:Cutoff1>55</dsp:Cutoff1>
+          <dsp:Cutoff2>0.1</dsp:Cutoff2>
+          <dsp:KernelLength>60</dsp:KernelLength>
+          <dsp:FilterType>BandPass</dsp:FilterType>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="dsp:FrequencyFilter">
+          <dsp:SampleRate>44100</dsp:SampleRate>
+          <dsp:Cutoff1>6000</dsp:Cutoff1>
+          <dsp:Cutoff2>65</dsp:Cutoff2>
+          <dsp:KernelLength>60</dsp:KernelLength>
+          <dsp:FilterType>BandPass</dsp:FilterType>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="dsp:DetectSpikes">
+          <dsp:Delay>20</dsp:Delay>
+          <dsp:Length>60</dsp:Length>
+          <dsp:Threshold>
+            <dsp:double>-100</dsp:double>
+          </dsp:Threshold>
+          <dsp:WaveformRefinement>AlignPeaks</dsp:WaveformRefinement>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:SubscribeWhen" />
+      </Expression>
+      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Logging.FrameEventLogger.bonsai">
+        <Name>Events</Name>
+        <Append>false</Append>
+        <Overwrite>false</Overwrite>
+        <Suffix>Timestamp</Suffix>
+        <FileName>framedevent.csv</FileName>
+      </Expression>
+      <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.OrthographicView.bonsai">
+        <Left>-40</Left>
+        <Right>40</Right>
+        <Bottom>-61</Bottom>
+        <Top>61</Top>
+      </Expression>
+      <Expression xsi:type="rx:BehaviorSubject">
+        <Name>Draw</Name>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="p1:OpenCVMatUDPClient">
+          <p1:addr>localhost</p1:addr>
+          <p1:port>9001</p1:port>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="io:CsvReader">
+        <io:FileName>C:\Users\bme-fong\Desktop\Enero-3-1-2023-0.5_01_03_2023_16_57_17.csv</io:FileName>
+        <io:ListSeparator>,</io:ListSeparator>
+        <io:SkipRows>1</io:SkipRows>
+      </Expression>
+      <Expression xsi:type="scr:ExpressionTransform">
+        <scr:Expression>new(
+double.Parse(it[0]) as Spacial,
+double.Parse(it[2]) * 10000000 as Duration,
+double.Parse(it[3]) as contrast,
+double.Parse(it[1]) as Orientation
+)</scr:Expression>
+      </Expression>
+      <Expression xsi:type="rx:CreateObservable">
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="WorkflowInput">
+              <Name>Source1</Name>
+            </Expression>
+            <Expression xsi:type="rx:BehaviorSubject">
+              <Name>Parameters</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Draw</Name>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Parameters</Name>
+            </Expression>
+            <Expression xsi:type="PropertyMapping">
+              <PropertyMappings>
+                <Property Name="Contrast" Selector="contrast" />
+              </PropertyMappings>
+            </Expression>
+            <Expression xsi:type="PropertyMapping">
+              <PropertyMappings>
+                <Property Name="SpatialFrequency" Selector="Spacial" />
+              </PropertyMappings>
+            </Expression>
+            <Expression xsi:type="PropertyMapping">
+              <PropertyMappings>
+                <Property Name="Angle" Selector="Orientation" />
+              </PropertyMappings>
+            </Expression>
+            <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawGratings.bonsai">
+              <LocationX>0</LocationX>
+              <LocationY>0</LocationY>
+              <Layer>0</Layer>
+              <Angle>2578.31</Angle>
+              <SpatialFrequency>0.5</SpatialFrequency>
+              <TemporalFrequency>0</TemporalFrequency>
+              <Phase>0</Phase>
+              <SquareWave>false</SquareWave>
+              <Contrast>-1</Contrast>
+              <DutyCycle xsi:nil="true" />
+              <Radius>2</Radius>
+              <Aperture>0</Aperture>
+              <Opacity>1</Opacity>
+              <ExtentX>80</ExtentX>
+              <ExtentY>150</ExtentY>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Parameters</Name>
+            </Expression>
+            <Expression xsi:type="PropertyMapping">
+              <PropertyMappings>
+                <Property Name="DueTime" Selector="Duration" />
+              </PropertyMappings>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="gl:Timer">
+                <gl:DueTime>PT0.5S</gl:DueTime>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:TakeUntil" />
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Draw</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Take">
+                <rx:Count>1</rx:Count>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="IncludeWorkflow" Path="BonVision:Logging.LogEvent.bonsai">
+              <Format>time</Format>
+              <Selector />
+              <Name>Events</Name>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="1" Label="Source1" />
+            <Edge From="2" To="7" Label="Source1" />
+            <Edge From="3" To="4" Label="Source1" />
+            <Edge From="3" To="5" Label="Source1" />
+            <Edge From="3" To="6" Label="Source1" />
+            <Edge From="4" To="7" Label="Source2" />
+            <Edge From="5" To="7" Label="Source3" />
+            <Edge From="6" To="7" Label="Source4" />
+            <Edge From="7" To="11" Label="Source1" />
+            <Edge From="8" To="9" Label="Source1" />
+            <Edge From="9" To="10" Label="Source1" />
+            <Edge From="10" To="11" Label="Source2" />
+            <Edge From="12" To="13" Label="Source1" />
+            <Edge From="13" To="14" Label="Source1" />
+          </Edges>
+        </Workflow>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:Concat" />
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge From="0" To="1" Label="Source1" />
+      <Edge From="1" To="2" Label="Source1" />
+      <Edge From="3" To="12" Label="Source1" />
+      <Edge From="4" To="5" Label="Source1" />
+      <Edge From="5" To="6" Label="Source1" />
+      <Edge From="5" To="16" Label="Source1" />
+      <Edge From="6" To="7" Label="Source1" />
+      <Edge From="6" To="12" Label="Source2" />
+      <Edge From="7" To="8" Label="Source1" />
+      <Edge From="8" To="9" Label="Source1" />
+      <Edge From="9" To="10" Label="Source1" />
+      <Edge From="10" To="11" Label="Source1" />
+      <Edge From="12" To="13" Label="Source1" />
+      <Edge From="13" To="14" Label="Source1" />
+      <Edge From="14" To="15" Label="Source1" />
+      <Edge From="17" To="18" Label="Source1" />
+      <Edge From="18" To="19" Label="Source1" />
+      <Edge From="19" To="20" Label="Source1" />
+    </Edges>
+  </Workflow>
+</WorkflowBuilder>
